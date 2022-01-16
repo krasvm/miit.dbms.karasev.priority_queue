@@ -1,5 +1,7 @@
+#pragma once
 #include <stdio.h>
 #include <string>
+#include <stdexcept>
 
 class PriorityQueue_int{
 	public:
@@ -113,7 +115,56 @@ class PriorityQueue_int{
 	/*
 	* Публичные методы класса
 	*/
-	virtual void push(unsigned int priority, int& value);
-	virtual int less();
-	virtual int top();
+	void push(unsigned int priority, int value) {
+		_resizeItems(_size + 1);
+		size_t offset, shiftOffset;
+		ItemWrapper_int newItem(this, priority, value);
+		/*
+		* Определяем смещение (offset) куда воткнуть наше значение в соответствии с приоритетом
+		*/
+		for (offset = 0; offset < _size-1; offset++) {
+			if (_items[offset].getPriority() < priority) {
+				break;
+			}
+		}
+		/*
+		* Сдвигаем все элементы начиная с offset дальше по нашей очереди
+		*/
+		if (_size > 1) {
+			for (shiftOffset = _size; shiftOffset-- > offset;) {
+				_items[shiftOffset] = _items[shiftOffset - 1];
+			}
+		}
+		/*
+		* Устанавливаем новое значение в классе-обёртке на определённое место
+		*/
+		_items[offset] = newItem;
+	}
+	/*
+	* Выталкивание из очереди элементы с наименьшим приоритетом
+	*/
+	int less() {
+		if (_size == 0) {
+			throw std::runtime_error("trying to extract value from empty queue");
+		}
+		int value = _items[_size - 1].getValue();
+		_resizeItems(_size - 1);
+		return value;
+	}
+	/*
+	* Выталкивание из очереди элементы с наивысшим приоритетом
+	*/
+	int top() {
+		if (_size == 0) {
+			throw std::runtime_error("trying to extract value from empty queue");
+		}
+		int value = _items[0].getValue();
+		if (_size > 1) {
+			for (size_t counter = 1; counter++; counter<_size) {
+				_items[counter - 1] = _items[counter];
+			}
+		}
+		_resizeItems(_size - 1);
+		return value;
+	}
 };

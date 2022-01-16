@@ -1,6 +1,8 @@
-#include <stdlib.h>
+#include <stdio.h>
+#include <string>
 
 class PriorityQueue_int{
+	public:
     class ItemWrapper_int{
 		/*
 		* Ссылка на очередь
@@ -29,11 +31,15 @@ class PriorityQueue_int{
 		unsigned int getPriority() {
 			return _priority;
 		}
-
+		/*
+		* Геттер для приватного значение _value
+		*/
 		int& getValue() {
 			return _value;
 		}
-
+		/*
+		* Сеттер для приватного значение _value
+		*/
 		void setValue(int& value) {
 			_value=value;
 		}
@@ -45,6 +51,7 @@ class PriorityQueue_int{
 			return other;
 		}
     };
+	private:
 	size_t _size=0;
 	
 	/*
@@ -55,7 +62,24 @@ class PriorityQueue_int{
 	/*
 	* Служебная (приватная) процедура для изменения размера очереди
 	*/
-	virtual void _resizeItems(size_t newSize);
+	void _resizeItems(size_t newSize) {
+		if (_size == newSize) {
+			return;
+		}
+		if (newSize == 0) {
+			free(_items);
+			_items = NULL;
+			_size = 0;
+		}
+		ItemWrapper_int* newItems = (ItemWrapper_int*)calloc(sizeof(ItemWrapper_int), newSize);
+		size_t minSize = _size > newSize ? newSize : _size;
+		for (size_t counter = 0; counter < minSize; counter++) {
+			newItems[counter] = _items[counter];
+		}
+		free(_items);
+		_items = newItems;
+		_size = newSize;
+	}
     public:
 	/*
 	* Деструктор класса
@@ -70,6 +94,21 @@ class PriorityQueue_int{
 	PriorityQueue_int(PriorityQueue_int&){}
 	PriorityQueue_int();
 
+	/*
+	* Метод формирования строчного представления ОчередиСПриоритетом
+	*/
+	operator std::string() const {
+		std::string buffer="[";
+		for(auto counter=0;counter<_size;counter++){
+			if(counter>0){
+				buffer+=", ";
+			}
+			auto iterator=_items[counter];
+			buffer+=std::to_string(iterator.getValue());
+		}
+		buffer+="]";
+		return buffer;
+	}
 
 	/*
 	* Публичные методы класса
